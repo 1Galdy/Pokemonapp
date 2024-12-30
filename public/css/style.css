@@ -1,0 +1,38 @@
+/* Police générale */
+body {
+    background: rgb(255,255,255);
+    font-family: 'Roboto', sans-serif;
+    background-color: #f8f9fa; /* Fond clair pour un design moderne */
+    color: #333; /* Texte principal */
+}
+
+/* Titres */
+h1, h2, h3 {
+    font-family: 'Press Start 2P', cursive;
+    color: #ffcb05; /* Couleur inspirée du jaune Pokémon */
+}
+
+/* Paragraphes */
+p, select{
+    font-family: 'Lato', sans-serif;
+    line-height: 1.6;
+    color: #555;
+}
+
+/* Informations importantes */
+.highlight {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 500;
+    color: #d32f2f; /* Rouge pour attirer l'attention */
+}
+
+main{
+    background: rgb(246, 246, 246);
+    width: 100%;
+    height: 70vh;
+    overflow-y: scroll;
+    padding: 2%;
+}
+main::-webkit-scrollbar{
+    display: none;
+}

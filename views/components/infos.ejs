@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Infos Pokémon</title>
+  <style>
+    .backbutton{
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
+        background: lightgray;
+        border-radius: 40px;
+        align-items: center;
+        object-fit: contain;
+    }
+    .container{
+        width: 80%;
+        margin-left: 10%;
+    }
+    .evolution {
+      display: flex;
+      flex-wrap: wrap;
+    }
+    .evolution div {
+      margin: 10px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <a href="/"><img src="image/back.svg" class="backbutton"></a> 
+  <div class="container">
+    <h1>Infos Pokémon</h1>
+    <% if(jsonData && jsonData.name){ %>
+        <p>Nom: <%= jsonData.name %></p>
+        <p>ID: <%= jsonData.id %></p>
+        <p>Type: <%= jsonData.types.map(t => t.type.name).join(', ') %></p>
+        <img src="<%= jsonData.sprites.front_default %>" alt="<%= jsonData.name %>">
+        <h2>Description</h2>
+        <p><%= speciesData.flavor_text_entries.find(entry => entry.language.name === 'en').flavor_text %></p>
+        <h2>Évolutions</h2>
+        <% if(evolutionData && evolutionData.chain){ %>
+        <div class="evolution">
+            <% let current = evolutionData.chain; %>
+            <% while(current){ %>
+            <div>
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/<%= current.species.url.split('/').slice(-2, -1)[0] %>.png" alt="<%= current.species.name %>">
+                <p><%= current.species.name %></p>
+            </div>
+            <% current = current.evolves_to[0]; %>
+            <% } %>
+        </div>
+        <% } %>
+        <h2>Statistiques</h2>
+        <ul>
+        <% jsonData.stats.forEach(stat => { %>
+            <li><%= stat.stat.name %>: <%= stat.base_stat %></li>
+        <% }) %>
+        </ul>
+    <% } else { %>
+        <p><%= jsonData %></p>
+    <% } %>
+  </div>
+</body>
+</html>

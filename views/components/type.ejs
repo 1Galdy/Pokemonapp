@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pokémon par Type</title>
+</head>
+<body>
+  <!-- <h1>Pokémon par Type</h1> -->
+  <p>Liste des pokémon de type <%- filter %> trouvés</p>
+  <% if(pokemonData && pokemonData.length > 0){ %>
+    <ul>
+      <% pokemonData.forEach(pokemon => { %>
+        <li>
+          <a href="/infos?pokemonName=<%= pokemon.name %>">
+            <img src="<%= pokemon.image %>" alt="<%= pokemon.name %>">
+            <%= pokemon.name %>
+          </a>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
+</body>
+</html>

@@ -1,0 +1,55 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+nav{
+    /* background: red; */
+    padding: 1%;
+}
+#logoMenu{
+    /* background: blue; */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1%;
+}
+#logoMenu > img{
+    object-fit: contain; /* Évite la distorsion des images */
+    cursor: pointer;
+}
+#logoMenu > img:first-child{
+    width: 120px;
+    height: 120px;
+}
+#logoMenu > img:nth-child(3){
+    width: 50px;
+    height: 50px;
+    border-radius: 50px;
+    background: rgb(241, 241, 241);
+    padding: 10px;
+    cursor: pointer;
+}
+#filter{
+    /* background: yellow; */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+#filter h1 {
+    font-size: 2rem; /* Taille du texte */
+    color: black;
+    margin: 0;
+}
+#filter > select{
+    padding: 0 1% 0 1%;
+    height: 5vh;
+    cursor: pointer;
+    outline: none; /* Supprime l'effet de focus natif */
+    border-radius: 10px;
+}
+#filter select:hover {
+    border-color: rgb(123, 133, 182); /* Change la couleur de bordure au survol */
+    background-color: rgb(106, 114, 187); /* Change la couleur de fond au survol */
+    color: white;
+}

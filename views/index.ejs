@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="image/Icon1.svg" type="image/x-icon">
+  <link rel="stylesheet" href="css/style.css">
+  <title>Pokedex</title>
+</head>
+<body>
+  <%- include("components/nav.ejs") %>
+  <main>
+    <% if(filter === 'all'){ %> 
+      <%- include("components/pokemon.ejs") %> 
+    <% } else { %>
+      <%- include("components/type.ejs") %> 
+    <% } %>
+
+    <div class="pagination">
+      <% if(offset > 0){ %>
+        <a href="/?typeOf=<%= filter %>&offset=<%= offset - limit %>">Précédent</a>
+      <% } %>
+      <% if(offset + limit < count){ %>
+        <a href="/?typeOf=<%= filter %>&offset=<%= offset + limit %>">Suivant</a>
+      <% } %>
+    </div>
+  </main>
+</body>
+</html>
