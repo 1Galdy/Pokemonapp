@@ -1,0 +1,13 @@
+functions:
+  api:
+    handler: serveur.handler
+    events:
+      - http:
+          path: /
+          method: get
+      - http:
+          path: /infos
+          method: get
+      - http:
+          path: /error
+          method: get
