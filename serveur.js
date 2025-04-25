@@ -1,13 +1,14 @@
 const express = require('express');
 const path = require('path');
-const fetch = require('node-fetch'); // Assure-toi d'avoir installé node-fetch
+const fetch = require('node-fetch'); // Compatible avec CommonJS
 const serverless = require('serverless-http');
+
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs'); // Assure-toi d'avoir configuré le moteur de vue
+app.set('view engine', 'ejs');
 
 const infosApp = [
   {
@@ -35,11 +36,11 @@ const infosApp = [
   }
 ];
 
-const limit = 100; // Nombre de Pokémon par page
+const limit = 100;
 
 async function apiAllData(offset = 0) {
   try {
-    const response = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${offset}`);
+    const response = await fetch(`${infosApp[2].data.All}&offset=${offset}`);
     const jsonData = await response.json();
     const pokemonData = await Promise.all(jsonData.results.map(async (pokemon) => {
       const detailsResponse = await fetch(pokemon.url);
@@ -60,15 +61,10 @@ async function apiAllData(offset = 0) {
 async function apiTypeData(type) {
   try {
     const response = await fetch(infosApp[2].data.Type + type.toLowerCase());
-    if (!response.ok) {
-      throw new Error('Erreur lors de la récupération des données de l\'API');
-    }
+    if (!response.ok) throw new Error('Erreur lors de la récupération des données de l\'API');
     const jsonData = await response.json();
     const pokemonData = await Promise.all(jsonData.pokemon.map(async (p) => {
       const detailsResponse = await fetch(p.pokemon.url);
-      if (!detailsResponse.ok) {
-        throw new Error('Erreur lors de la récupération des détails du Pokémon');
-      }
       const details = await detailsResponse.json();
       return {
         name: p.pokemon.name,
@@ -86,9 +82,7 @@ async function apiTypeData(type) {
 async function apiByNameData(name) {
   try {
     const response = await fetch(infosApp[2].data.byId + name);
-    if (!response.ok) {
-      throw new Error('Erreur lors de la récupération des données de l\'API');
-    }
+    if (!response.ok) throw new Error('Erreur lors de la récupération des données de l\'API');
     const jsonData = await response.json();
     const speciesResponse = await fetch(jsonData.species.url);
     const speciesData = await speciesResponse.json();
@@ -119,27 +113,27 @@ app.get('/', async (req, res) => {
     }
     res.render('index.ejs', { infosApp, filter, pokemonData, offset, limit, count });
   } catch (error) {
-    console.error('Erreur lors de la récupération des données de l\'API', error);
     res.status(500).render('status/500');
   }
 });
 
 app.get('/infos', async (req, res) => {
   const name = req.query.pokemonName;
-  let jsonData;
-  let speciesData;
-  let evolutionData;
-
   try {
     if (name) {
       const result = await apiByNameData(name);
-      jsonData = result.jsonData;
-      speciesData = result.speciesData;
-      evolutionData = result.evolutionData;
+      res.render('components/infos.ejs', {
+        jsonData: result.jsonData,
+        speciesData: result.speciesData,
+        evolutionData: result.evolutionData
+      });
     } else {
-      jsonData = "Il n'y a pas d'information sur ce pokémon pour le moment, revenez plus tard...";
+      res.render('components/infos.ejs', {
+        jsonData: "Aucune info disponible.",
+        speciesData: null,
+        evolutionData: null
+      });
     }
-    res.render('components/infos.ejs', { jsonData, speciesData, evolutionData });
   } catch (error) {
     res.status(500).render('status/500');
   }
@@ -147,4 +141,12 @@ app.get('/infos', async (req, res) => {
 
 app.get('/error', (req, res) => res.status(404).render('status/404'));
 
+// Pour Netlify ou Render avec Serverless
 module.exports.handler = serverless(app);
+
+// Pour exécution locale
+if (require.main === module) {
+  app.listen(port, () => {
+    console.log(`Serveur en ligne sur le port ${port}`);
+  });
+}
