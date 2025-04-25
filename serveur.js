@@ -6,6 +6,20 @@ const serverless = require('serverless-http');
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Timeout helper
+const fetchWithTimeout = async (url, options = {}, timeout = 5000) => {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    clearTimeout(id);
+    return response;
+  } catch (error) {
+    console.error(`Timeout ou erreur réseau pour : ${url}`);
+    throw error;
+  }
+};
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -29,21 +43,21 @@ const infosApp = [
   {
     type: 'lien_API',
     data: {
-      All: "https://pokeapi.co/api/v2/pokemon?limit=100",
+      All: "https://pokeapi.co/api/v2/pokemon?limit=20",
       Type: "https://pokeapi.co/api/v2/type/",
       byId: "https://pokeapi.co/api/v2/pokemon/"
     }
   }
 ];
 
-const limit = 100;
+const limit = 20; // Réduit pour éviter surcharge sur Render
 
 async function apiAllData(offset = 0) {
   try {
-    const response = await fetch(`${infosApp[2].data.All}&offset=${offset}`);
+    const response = await fetchWithTimeout(`${infosApp[2].data.All}&offset=${offset}`);
     const jsonData = await response.json();
     const pokemonData = await Promise.all(jsonData.results.map(async (pokemon) => {
-      const detailsResponse = await fetch(pokemon.url);
+      const detailsResponse = await fetchWithTimeout(pokemon.url);
       const details = await detailsResponse.json();
       return {
         name: pokemon.name,
@@ -53,18 +67,19 @@ async function apiAllData(offset = 0) {
     }));
     return { pokemonData, count: jsonData.count };
   } catch (error) {
-    console.error('Erreur lors de la récupération des données de l\'API', error);
+    console.error('Erreur dans apiAllData:', error);
     throw error;
   }
 }
 
 async function apiTypeData(type) {
   try {
-    const response = await fetch(infosApp[2].data.Type + type.toLowerCase());
+    const response = await fetchWithTimeout(infosApp[2].data.Type + type.toLowerCase());
     if (!response.ok) throw new Error('Erreur lors de la récupération des données de l\'API');
     const jsonData = await response.json();
-    const pokemonData = await Promise.all(jsonData.pokemon.map(async (p) => {
-      const detailsResponse = await fetch(p.pokemon.url);
+    const limitedPokemon = jsonData.pokemon.slice(0, limit); // Limite pour éviter surcharge
+    const pokemonData = await Promise.all(limitedPokemon.map(async (p) => {
+      const detailsResponse = await fetchWithTimeout(p.pokemon.url);
       const details = await detailsResponse.json();
       return {
         name: p.pokemon.name,
@@ -74,23 +89,23 @@ async function apiTypeData(type) {
     }));
     return pokemonData;
   } catch (error) {
-    console.error('Erreur lors de la récupération des données de l\'API', error);
+    console.error('Erreur dans apiTypeData:', error);
     throw error;
   }
 }
 
 async function apiByNameData(name) {
   try {
-    const response = await fetch(infosApp[2].data.byId + name);
+    const response = await fetchWithTimeout(infosApp[2].data.byId + name);
     if (!response.ok) throw new Error('Erreur lors de la récupération des données de l\'API');
     const jsonData = await response.json();
-    const speciesResponse = await fetch(jsonData.species.url);
+    const speciesResponse = await fetchWithTimeout(jsonData.species.url);
     const speciesData = await speciesResponse.json();
-    const evolutionResponse = await fetch(speciesData.evolution_chain.url);
+    const evolutionResponse = await fetchWithTimeout(speciesData.evolution_chain.url);
     const evolutionData = await evolutionResponse.json();
     return { jsonData, speciesData, evolutionData };
   } catch (error) {
-    console.error('Erreur lors de la récupération des données de l\'API', error);
+    console.error('Erreur dans apiByNameData:', error);
     throw error;
   }
 }
@@ -141,12 +156,12 @@ app.get('/infos', async (req, res) => {
 
 app.get('/error', (req, res) => res.status(404).render('status/404'));
 
-// Pour Netlify ou Render avec Serverless
+// Export pour Netlify ou Render
 module.exports.handler = serverless(app);
 
 // Pour exécution locale
 if (require.main === module) {
-  app.listen(port, () => {
+  app.listen(port, '0.0.0.0',() => {
     console.log(`Serveur en ligne sur le port ${port}`);
   });
 }
